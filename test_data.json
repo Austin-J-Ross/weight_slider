@@ -1,0 +1,28 @@
+{
+  "version": 1,
+  "savedAt": "2026-05-18T04:11:18.864Z",
+  "goal": 1800,
+  "startWeight": 184,
+  "lastWeight": 186.8,
+  "log": {
+    "date": "2026-05-18",
+    "food": [],
+    "workout": [],
+    "weight": [
+      {
+        "id": 1779076689947,
+        "type": "weight",
+        "value": 186.8,
+        "time": "11:58 PM"
+      }
+    ]
+  },
+  "history": [
+    {
+      "date": "2026-05-18",
+      "calories": 0,
+      "workout": 0,
+      "weight": 186.8
+    }
+  ]
+}

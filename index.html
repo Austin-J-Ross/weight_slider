@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Calorie Tracker</title>
+  <link rel="stylesheet" href="style.css" />
+  <link rel="manifest" href="manifest.json" />
+  <meta name="theme-color" content="#ff6b35" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  <meta name="apple-mobile-web-app-title" content="CalTracker" />
+  <link rel="apple-touch-icon" href="icon.svg" />
+</head>
+<body>
+
+  <!-- ── Left drawer backdrop ── -->
+  <div class="drawer-backdrop" id="drawerBackdrop"></div>
+
+  <!-- ── Left drawer ── -->
+  <nav class="drawer" id="drawer" aria-label="Menu">
+    <div class="drawer-header">
+      <span class="drawer-app-name">Calorie Tracker</span>
+      <button class="drawer-close" id="drawerClose" aria-label="Close menu">&#x2715;</button>
+    </div>
+    <div class="drawer-section">
+      <div class="drawer-section-label">Account</div>
+      <div class="drawer-field">
+        <label class="drawer-field-label" for="goalInput">Daily Calorie Goal</label>
+        <div class="drawer-field-row">
+          <input type="number" id="goalInput" class="drawer-input" placeholder="e.g. 2000" min="1" max="99999" />
+          <button class="drawer-save-btn" id="goalSaveBtn">Save</button>
+        </div>
+        <div class="drawer-field-hint" id="goalHint"></div>
+      </div>
+
+      <div class="drawer-field drawer-field--spaced">
+        <label class="drawer-field-label" for="startWeightInput">Starting Weight (lb)</label>
+        <div class="drawer-field-row">
+          <input type="number" id="startWeightInput" class="drawer-input" placeholder="e.g. 150.0" min="50" max="700" step="0.1" />
+          <button class="drawer-save-btn" id="startWeightSaveBtn">Save</button>
+        </div>
+        <div class="drawer-field-hint" id="startWeightHint">Used as slider centre until first weight log</div>
+      </div>
+    </div>
+
+    <div class="drawer-section drawer-section--nav">
+      <div class="drawer-section-label">Data File</div>
+      <div class="drawer-file-status" id="fileStatus">No file linked</div>
+      <button class="drawer-nav-btn" id="linkFileBtn">
+        <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M10 3H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V9"/>
+          <polyline points="13 1 17 5 9 13 6 14 7 11 15 3"/>
+        </svg>
+        Link data file…
+      </button>
+      <button class="drawer-nav-btn drawer-nav-btn--subtle" id="unlinkFileBtn" hidden>Unlink</button>
+    </div>
+
+    <div class="drawer-section drawer-section--nav">
+      <div class="drawer-section-label">Analytics</div>
+      <button class="drawer-nav-btn" id="openHistoryBtn">
+        <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="1,14 5,8 9,11 13,5 17,2"/>
+          <line x1="1" y1="17" x2="17" y2="17"/>
+        </svg>
+        View History
+      </button>
+    </div>
+  </nav>
+
+  <!-- ── History panel (slides in from right) ── -->
+  <div class="history-panel" id="historyPanel">
+    <div class="history-header">
+      <button class="history-back-btn" id="historyBackBtn">&#x2190; Back</button>
+      <span class="history-title">History</span>
+      <div class="hist-view-toggle">
+        <button class="hvt-btn hvt-active" id="hvtDays">Days</button>
+        <button class="hvt-btn" id="hvtHours">Hours</button>
+      </div>
+    </div>
+
+    <div class="history-chart-wrap">
+      <svg id="historySvg" class="history-svg" viewBox="0 0 360 220" preserveAspectRatio="xMidYMid meet"></svg>
+    </div>
+
+    <div class="history-slider-section">
+      <div class="hms-track" id="hmsTrack">
+        <div class="hms-pill" id="hmsPill"></div>
+        <div class="hms-labels" id="hmsLabels">
+          <span data-idx="0">Weight</span>
+          <span data-idx="1">Calories</span>
+          <span data-idx="2">Workout</span>
+          <span data-idx="3">All</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── App shell ── -->
+  <div class="app">
+
+    <header class="header">
+      <button class="menu-btn" id="menuBtn" aria-label="Open menu">
+        <span></span><span></span><span></span>
+      </button>
+      <span class="header-title">Today</span>
+      <div class="header-date" id="headerDate"></div>
+    </header>
+
+    <!-- Progress bar -->
+    <div class="progress-section">
+      <div class="progress-labels">
+        <span class="progress-cal"><span id="totalCal">0</span> kcal</span>
+        <span class="progress-goal-label" id="progressGoalLabel"></span>
+      </div>
+      <div class="progress-track">
+        <div class="progress-fill" id="progressFill"></div>
+      </div>
+      <div class="progress-sub" id="progressSub"></div>
+    </div>
+
+    <!-- Log list -->
+    <main class="log-section">
+      <ul class="log-list" id="logList" aria-label="Food log"></ul>
+      <div class="empty-state" id="emptyState">
+        <div class="empty-icon">&#x1F35D;</div>
+        <div>Press <strong>+</strong> and drag to a category</div>
+      </div>
+    </main>
+
+  </div>
+
+  <!-- ── FAB radial-arm group ── -->
+  <div class="fab-overlay" id="fabOverlay"></div>
+
+  <div class="fab-group" id="fabGroup">
+    <!-- Stop: dot + label -->
+    <div class="fab-stop" data-action="calories">
+      <span class="fab-stop-label">Calories</span>
+      <div class="fab-stop-dot"></div>
+    </div>
+    <div class="fab-stop" data-action="workout">
+      <span class="fab-stop-label">Workout</span>
+      <div class="fab-stop-dot"></div>
+    </div>
+    <div class="fab-stop" data-action="weight">
+      <span class="fab-stop-label">Weight</span>
+      <div class="fab-stop-dot"></div>
+    </div>
+
+    <!-- FAB (the draggable thumb) -->
+    <button class="fab" id="fab" aria-label="Add" aria-expanded="false">
+      <span class="fab-icon">+</span>
+    </button>
+  </div>
+
+  <!-- ── Calories (food) bottom sheet ── -->
+  <div class="sheet-backdrop" id="sheetBackdrop"></div>
+  <div class="sheet" id="sheet" aria-modal="true" role="dialog" aria-label="Add food">
+    <div class="sheet-handle"></div>
+    <div class="sheet-title">Add Food</div>
+
+    <div class="sheet-body">
+      <!-- Left: food type drum picker -->
+      <div class="picker-wrap">
+        <div class="picker-fade-top"></div>
+        <div class="picker-fade-bottom"></div>
+        <div class="picker-highlight"></div>
+        <ul class="picker-list" id="pickerList" role="listbox" aria-label="Food type"></ul>
+      </div>
+
+      <!-- Right: cups pyramid → then slider -->
+      <div class="sheet-right-col">
+        <div class="plate-pyramid" id="platePyramid"></div>
+        <div class="plate-label" id="plateLabel"></div>
+        <div class="slider-wrap">
+          <div class="slider-top-row">
+            <div class="slider-left">
+              <div class="slider-preview" id="sliderPreview">100 g</div>
+              <div class="slider-lbs" id="sliderLbs">0.22 lb</div>
+            </div>
+            <div class="slider-kcal" id="sliderCalPreview">0 kcal</div>
+          </div>
+          <input type="range" id="weightSlider" class="weight-slider" min="0" max="1000" step="5" value="100" aria-label="Weight in grams" />
+          <div class="slider-labels"><span>0 g</span><span>1000 g</span></div>
+        </div>
+      </div>
+    </div>
+
+    <button class="sheet-add-btn" id="sheetAddBtn">Add to Log</button>
+  </div>
+
+  <!-- ── Workout bottom sheet ── -->
+  <div class="sheet-backdrop" id="workoutBackdrop"></div>
+  <div class="sheet" id="workoutSheet" aria-modal="true" role="dialog" aria-label="Log workout">
+    <div class="sheet-handle"></div>
+    <div class="sheet-title">Log Workout</div>
+    <div class="sheet-body">
+      <div class="picker-wrap">
+        <div class="picker-fade-top"></div>
+        <div class="picker-fade-bottom"></div>
+        <div class="picker-highlight"></div>
+        <ul class="picker-list" id="workoutPickerList" role="listbox" aria-label="Workout type"></ul>
+      </div>
+      <div class="slider-wrap">
+        <div class="slider-preview" id="durationPreview">30 min</div>
+        <div class="slider-cal-preview" id="workoutCalPreview">&#x2248; 0 kcal burned</div>
+        <input type="range" id="durationSlider" class="weight-slider" min="0" max="120" step="5" value="30" aria-label="Duration in minutes" />
+        <div class="slider-labels"><span>0 min</span><span>120 min</span></div>
+      </div>
+    </div>
+    <button class="sheet-add-btn" id="workoutAddBtn">Log Workout</button>
+  </div>
+
+  <!-- ── Body weight bottom sheet ── -->
+  <div class="sheet-backdrop" id="weightBackdrop"></div>
+  <div class="sheet" id="weightSheet" aria-modal="true" role="dialog" aria-label="Log weight">
+    <div class="sheet-handle"></div>
+    <div class="sheet-title">Log Weight</div>
+
+    <div class="wt-display-row">
+      <span class="wt-value" id="wtValue">—</span>
+      <span class="wt-unit">lb</span>
+    </div>
+    <div class="wt-delta" id="wtDelta"></div>
+
+    <input type="range" id="weightRangeSlider" class="weight-slider wt-slider"
+           step="0.2" aria-label="Weight in pounds" />
+    <div class="slider-labels">
+      <span id="wtMinLabel"></span>
+      <span id="wtMaxLabel"></span>
+    </div>
+
+    <button class="sheet-add-btn" id="weightSaveBtn" style="margin-top:24px">Save Weight</button>
+  </div>
+
+  <!-- ── Delete confirm sheet ── -->
+  <div class="delete-backdrop" id="deleteBackdrop"></div>
+  <div class="delete-sheet" id="deleteSheet" aria-modal="true" role="dialog" aria-label="Confirm delete">
+    <div class="sheet-handle"></div>
+    <div class="delete-question">Delete this item?</div>
+    <div class="delete-item-preview" id="deleteItemPreview"></div>
+    <div class="slide-delete-track" id="slideDeleteTrack">
+      <div class="slide-delete-fill" id="slideDeleteFill"></div>
+      <div class="slide-delete-label" id="slideDeleteLabel">Slide to delete</div>
+      <div class="slide-delete-thumb" id="slideDeleteThumb" role="slider" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" aria-label="Slide to confirm delete">&#x276F;</div>
+    </div>
+    <button class="delete-cancel-btn" id="deleteCancelBtn">Cancel</button>
+  </div>
+
+  <script src="app.js"></script>
+  <script>if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js');</script>
+</body>
+</html>
