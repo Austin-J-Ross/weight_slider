@@ -3,28 +3,38 @@
 // ── Food data ─────────────────────────────────────────────────────────────────
 // gPerCup: grams per US cup (≈240 ml) for each category
 const FOODS = [
-  { name: 'Meat',        calPerG: 2.0,  gPerCup: 240 },
-  { name: 'Fish',        calPerG: 1.5,  gPerCup: 200 },
-  { name: 'Bread',       calPerG: 2.65, gPerCup: 120 },
-  { name: 'Rice/Pasta',  calPerG: 1.3,  gPerCup: 185 },
-  { name: 'Dairy',       calPerG: 1.5,  gPerCup: 245 },
-  { name: 'Vegetables',  calPerG: 0.4,  gPerCup: 130 },
+  // Rough defaults for "quick add" calorie tracking.
+  // calPerG = kcal per gram
+  // gPerCup = approximate grams per 1 cup / slider volume unit
+
+  { name: 'Meat',        calPerG: 2.2,  gPerCup: 140 }, // cooked mixed meat; chicken lower, beef higher
+  { name: 'Fish',        calPerG: 1.5,  gPerCup: 140 }, // cooked fish, flaked/chunked
+  { name: 'Bread',       calPerG: 2.65, gPerCup: 40  }, // 1 cup cubed bread, not compressed
+  { name: 'Rice/Pasta',  calPerG: 1.45, gPerCup: 170 }, // cooked rice/pasta average
+  { name: 'Dairy',       calPerG: 0.9,  gPerCup: 245 }, // milk/yogurt-ish; cheese is much higher
+  { name: 'Vegetables',  calPerG: 0.35, gPerCup: 130 }, // non-starchy cooked/raw average
   { name: 'Fruit',       calPerG: 0.6,  gPerCup: 150 },
-  { name: 'Fats/Oils',   calPerG: 8.0,  gPerCup: 218 },
-  { name: 'Chips',       calPerG: 5.3,  gPerCup:  28 },
-  { name: 'Sweets',      calPerG: 4.0,  gPerCup: 190 },
-  { name: 'Sandwiches',  calPerG: 2.5,  gPerCup: 140 },
+  { name: 'Fats/Oils',   calPerG: 8.85, gPerCup: 218 }, // pure oils are ~8.8–9 kcal/g
+  { name: 'Chips',       calPerG: 5.3,  gPerCup: 28  }, // potato chips ~150 kcal/28g
+  { name: 'Sweets',      calPerG: 4.3,  gPerCup: 100 }, // cookies/cake/candy vary wildly
+  { name: 'Sandwiches',  calPerG: 2.5,  gPerCup: 140 }, // okay as rough composite
 ];
 
 const WORKOUTS = [
-  { name: 'Running',  calPerMin: 10 },
-  { name: 'Cycling',  calPerMin: 8  },
-  { name: 'HIIT',     calPerMin: 12 },
-  { name: 'Swimming', calPerMin: 7  },
-  { name: 'Weights',  calPerMin: 5  },
-  { name: 'Walking',  calPerMin: 4  },
-  { name: 'Yoga',     calPerMin: 3  },
+  { name: 'Running',  met: 9.8 },
+  { name: 'Cycling',  met: 7.5 },
+  { name: 'HIIT',     met: 8.0 },
+  { name: 'Swimming', met: 5.8 },
+  { name: 'Weights',  met: 3.5 },
+  { name: 'Walking',  met: 4.3 },
+  { name: 'Yoga',     met: 2.5 },
 ];
+
+function caloriesBurnedPerMinute(met, weightLb) {
+  const weightKg = weightLb * 0.45359237;
+  return (met * 3.5 * weightKg) / 200;
+}
+
 
 const ROW_H   = 52;
 const PICKER_H = 260;
@@ -407,7 +417,7 @@ workoutBackdrop.addEventListener('click', closeWorkoutSheet);
 
 function updateWorkoutSlider() {
   const mins = parseInt(durationSlider.value);
-  const cal  = Math.round(mins * WORKOUTS[workoutIndex].calPerMin);
+  const cal  = Math.round(mins * caloriesBurnedPerMinute(WORKOUTS[workoutIndex].met, weightBase()));
   durationPreview.textContent  = `${mins} min`;
   workoutCalPreview.textContent = `≈ ${cal} kcal burned`;
   const pct = (mins / 120) * 100;
@@ -422,7 +432,7 @@ workoutAddBtn.addEventListener('click', () => {
   if (mins === 0) { durationPreview.textContent = 'Set duration!'; setTimeout(updateWorkoutSlider, 900); return; }
   const w = WORKOUTS[workoutIndex];
   const _wt = new Date().toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' });
-  workoutLog.push({ id: Date.now(), type: 'workout', name: w.name, duration: mins, calories: Math.round(mins * w.calPerMin), time: _wt });
+  workoutLog.push({ id: Date.now(), type: 'workout', name: w.name, duration: mins, calories: Math.round(mins * caloriesBurnedPerMinute(w.met, weightBase())), time: _wt });
   saveLog();
   renderLog();
   updateTotals();
