@@ -1464,13 +1464,29 @@ renderLog();
 updateTotals();
 initFileHandle(); // async — re-renders if file data differs from localStorage
 
-const datePicker = $('datePicker');
-headerDate.addEventListener('click', () => {
-  datePicker.value = viewDate;
-  if (datePicker.showPicker) datePicker.showPicker();
-  else datePicker.click();
+function openDateSheet() {
+  $('dateSheetInput').value = viewDate;
+  $('dateSheet').classList.add('open');
+  $('dateSheetBackdrop').classList.add('visible');
+}
+function closeDateSheet() {
+  $('dateSheet').classList.remove('open');
+  $('dateSheetBackdrop').classList.remove('visible');
+}
+
+headerDate.addEventListener('click', openDateSheet);
+$('dateSheetBackdrop').addEventListener('click', closeDateSheet);
+$('dateSheetConfirm').addEventListener('click', () => {
+  const val = $('dateSheetInput').value;
+  if (val) setViewDate(val);
+  closeDateSheet();
 });
-datePicker.addEventListener('change', () => {
-  if (datePicker.value) setViewDate(datePicker.value);
-});
+
+function offsetDate(days) {
+  const d = new Date(viewDate + 'T12:00:00');
+  d.setDate(d.getDate() + days);
+  return d.toISOString().slice(0, 10);
+}
+$('dateQuickYesterday').addEventListener('click', () => { setViewDate(offsetDate(-1)); closeDateSheet(); });
+$('dateQuickToday').addEventListener('click',     () => { setViewDate(TODAY);         closeDateSheet(); });
 $('todayBtn').addEventListener('click', () => setViewDate(TODAY));

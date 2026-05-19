@@ -109,7 +109,6 @@
       </button>
       <span class="header-title">Today</span>
       <button class="header-date" id="headerDate" aria-label="Select date"></button>
-      <input type="date" id="datePicker" style="position:fixed;top:0;left:0;opacity:0;pointer-events:none;width:1px;height:1px">
     </header>
     <div class="past-date-banner" id="pastDateBanner" hidden>
       <span id="pastDateLabel"></span>
@@ -255,6 +254,19 @@
       <div class="slide-delete-thumb" id="slideDeleteThumb" role="slider" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" aria-label="Slide to confirm delete">&#x276F;</div>
     </div>
     <button class="delete-cancel-btn" id="deleteCancelBtn">Cancel</button>
+  </div>
+
+  <!-- ── Date picker sheet ── -->
+  <div class="sheet-backdrop" id="dateSheetBackdrop"></div>
+  <div class="sheet" id="dateSheet" aria-modal="true" role="dialog" aria-label="Select date">
+    <div class="sheet-handle"></div>
+    <div class="sheet-title">Select Date</div>
+    <input type="date" id="dateSheetInput" class="date-sheet-input" />
+    <div class="date-sheet-quick">
+      <button class="date-sheet-quick-btn" id="dateQuickYesterday">Yesterday</button>
+      <button class="date-sheet-quick-btn" id="dateQuickToday">Today</button>
+    </div>
+    <button class="sheet-add-btn" id="dateSheetConfirm">Go to Date</button>
   </div>
 
   <script src="app.js"></script>

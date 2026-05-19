@@ -84,6 +84,38 @@ html, body {
 }
 .header-date:active { background: var(--bg); }
 
+/* ── Date picker sheet ── */
+.date-sheet-input {
+  width: 100%;
+  padding: 13px 14px;
+  font-size: 17px;
+  border: 1.5px solid var(--border);
+  border-radius: 12px;
+  color: var(--text);
+  background: var(--bg);
+  margin-bottom: 14px;
+  outline: none;
+}
+.date-sheet-input:focus { border-color: var(--accent); }
+
+.date-sheet-quick {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+.date-sheet-quick-btn {
+  flex: 1;
+  padding: 11px;
+  background: var(--bg);
+  border: 1.5px solid var(--border);
+  border-radius: 10px;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text);
+  cursor: pointer;
+}
+.date-sheet-quick-btn:active { background: var(--border); }
+
 .past-date-banner {
   background: var(--accent);
   color: #fff;
