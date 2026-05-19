@@ -50,29 +50,71 @@ let goal         = null;
 let startWeight  = null; // lb — set in drawer, used as slider centre before first log
 let pendingDeleteId   = null;
 let pendingDeleteType = null; // 'food' | 'workout' | 'weight'
+let viewDate          = null; // set after TODAY is defined
 
 // ── Storage ───────────────────────────────────────────────────────────────────
 const TODAY = new Date().toISOString().slice(0, 10);
+viewDate = TODAY;
 
 function loadStorage() {
   try {
-    const saved = JSON.parse(localStorage.getItem('calTracker_log') || 'null');
-    if (saved && saved.date === TODAY) {
-      foodLog    = saved.food    || [];
-      workoutLog = saved.workout || [];
-      weightLog  = saved.weight  || [];
-    }
     goal        = JSON.parse(localStorage.getItem('calTracker_goal')        || 'null');
     startWeight = JSON.parse(localStorage.getItem('calTracker_startWeight') || 'null');
   } catch (_) {}
+  loadDayData(TODAY);
+}
+
+function loadDayData(date) {
+  if (date === TODAY) {
+    try {
+      const saved = JSON.parse(localStorage.getItem('calTracker_log') || 'null');
+      if (saved && saved.date === TODAY) {
+        foodLog    = saved.food    || [];
+        workoutLog = saved.workout || [];
+        weightLog  = saved.weight  || [];
+      } else {
+        foodLog = workoutLog = weightLog = [];
+      }
+    } catch (_) { foodLog = workoutLog = weightLog = []; }
+  } else {
+    const hist  = loadHistory();
+    const entry = hist.find(h => h.date === date);
+    if (entry && entry.entries) {
+      foodLog    = entry.entries.filter(e => (e._type || e.type) === 'food');
+      workoutLog = entry.entries.filter(e => (e._type || e.type) === 'workout');
+      weightLog  = entry.entries.filter(e => (e._type || e.type) === 'weight');
+    } else {
+      foodLog = workoutLog = weightLog = [];
+    }
+  }
 }
 
 function saveLog() {
-  localStorage.setItem('calTracker_log', JSON.stringify({
-    date: TODAY, food: foodLog, workout: workoutLog, weight: weightLog,
-  }));
-  saveHistory();
-  writeToFile(); // fire-and-forget; no-op if no file linked
+  if (viewDate === TODAY) {
+    localStorage.setItem('calTracker_log', JSON.stringify({
+      date: TODAY, food: foodLog, workout: workoutLog, weight: weightLog,
+    }));
+    saveHistory();
+    writeToFile();
+  } else {
+    let hist = loadHistory();
+    const entry = {
+      date:     viewDate,
+      calories: foodLog.reduce((s, i) => s + i.calories, 0),
+      workout:  workoutLog.reduce((s, i) => s + i.calories, 0),
+      weight:   weightLog.length ? weightLog[weightLog.length - 1].value : null,
+      entries: [
+        ...foodLog.map(i    => ({ ...i, _type: 'food'    })),
+        ...workoutLog.map(i => ({ ...i, _type: 'workout' })),
+        ...weightLog.map(i  => ({ ...i, _type: 'weight'  })),
+      ],
+    };
+    const idx = hist.findIndex(h => h.date === viewDate);
+    if (idx >= 0) hist[idx] = entry; else hist.push(entry);
+    hist.sort((a, b) => a.date.localeCompare(b.date));
+    if (hist.length > 365) hist = hist.slice(-365);
+    localStorage.setItem('calTracker_history', JSON.stringify(hist));
+  }
 }
 
 // ── History (daily rolling record, 90 days) ───────────────────────────────────
@@ -97,7 +139,7 @@ function saveHistory() {
   const idx = hist.findIndex(h => h.date === TODAY);
   if (idx >= 0) hist[idx] = entry; else hist.push(entry);
   hist.sort((a, b) => a.date.localeCompare(b.date));
-  if (hist.length > 90) hist = hist.slice(-90);
+  if (hist.length > 365) hist = hist.slice(-365);
   localStorage.setItem('calTracker_history', JSON.stringify(hist));
 }
 
@@ -195,10 +237,32 @@ const slideLabel      = $('slideDeleteLabel');
 const slideThumb      = $('slideDeleteThumb');
 const deleteCancelBtn = $('deleteCancelBtn');
 
-// ── Header date ───────────────────────────────────────────────────────────────
-headerDate.textContent = new Date().toLocaleDateString(undefined, {
-  weekday: 'short', month: 'short', day: 'numeric',
-});
+// ── Header date & date navigation ────────────────────────────────────────────
+function updateHeaderDate() {
+  const d = new Date(viewDate + 'T12:00:00');
+  headerDate.textContent = d.toLocaleDateString(undefined, {
+    weekday: 'short', month: 'short', day: 'numeric',
+  });
+  const banner = $('pastDateBanner');
+  if (viewDate === TODAY) {
+    banner.hidden = true;
+  } else {
+    banner.hidden = false;
+    $('pastDateLabel').textContent = d.toLocaleDateString(undefined, {
+      weekday: 'long', month: 'long', day: 'numeric',
+    });
+  }
+}
+
+function setViewDate(date) {
+  viewDate = date;
+  loadDayData(date);
+  updateHeaderDate();
+  renderLog();
+  updateTotals();
+}
+
+updateHeaderDate();
 
 // ── Drawer ────────────────────────────────────────────────────────────────────
 function openDrawer() {
@@ -496,7 +560,7 @@ weightSaveBtn.addEventListener('click', () => {
   const val  = Math.round(parseFloat(weightRangeSlider.value) * 10) / 10;
   const time = new Date().toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' });
   weightLog.push({ id: Date.now(), type: 'weight', value: val, time });
-  saveLastWeight(val); // persists across days
+  if (viewDate === TODAY) saveLastWeight(val);
   saveLog();
   renderLog();
   closeWeightSheet();
@@ -1395,3 +1459,14 @@ updateWorkoutSlider();
 renderLog();
 updateTotals();
 initFileHandle(); // async — re-renders if file data differs from localStorage
+
+const datePicker = $('datePicker');
+headerDate.addEventListener('click', () => {
+  datePicker.value = viewDate;
+  if (datePicker.showPicker) datePicker.showPicker();
+  else datePicker.click();
+});
+datePicker.addEventListener('change', () => {
+  if (datePicker.value) setViewDate(datePicker.value);
+});
+$('todayBtn').addEventListener('click', () => setViewDate(TODAY));

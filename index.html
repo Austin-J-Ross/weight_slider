@@ -105,8 +105,13 @@
         <span></span><span></span><span></span>
       </button>
       <span class="header-title">Today</span>
-      <div class="header-date" id="headerDate"></div>
+      <button class="header-date" id="headerDate" aria-label="Select date"></button>
+      <input type="date" id="datePicker" style="position:fixed;top:0;left:0;opacity:0;pointer-events:none;width:1px;height:1px">
     </header>
+    <div class="past-date-banner" id="pastDateBanner" hidden>
+      <span id="pastDateLabel"></span>
+      <button class="past-date-today-btn" id="todayBtn">Back to Today</button>
+    </div>
 
     <!-- Progress bar -->
     <div class="progress-section">

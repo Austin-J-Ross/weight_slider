@@ -71,7 +71,44 @@ html, body {
 .menu-btn:active span { background: var(--accent); }
 
 .header-title { font-size: 20px; font-weight: 700; flex: 1; }
-.header-date  { font-size: 13px; color: var(--text-2); }
+.header-date {
+  font-size: 13px;
+  color: var(--text-2);
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 6px 10px;
+  border-radius: 8px;
+  -webkit-tap-highlight-color: transparent;
+  transition: background 0.15s;
+}
+.header-date:active { background: var(--bg); }
+
+.past-date-banner {
+  background: var(--accent);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 16px;
+  font-size: 13px;
+  font-weight: 600;
+  flex-shrink: 0;
+  gap: 12px;
+}
+.past-date-today-btn {
+  background: rgba(255,255,255,0.22);
+  border: none;
+  color: #fff;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 5px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  white-space: nowrap;
+  -webkit-tap-highlight-color: transparent;
+}
+.past-date-today-btn:active { background: rgba(255,255,255,0.38); }
 
 /* ── Progress section ── */
 .progress-section {
