@@ -1,6 +1,6 @@
 'use strict';
 
-const CACHE = 'cal-tracker-v1';
+const CACHE = 'cal-tracker-v2';
 
 self.addEventListener('install', e => {
   const base = self.registration.scope;
