@@ -1,5 +1,7 @@
 'use strict';
 
+const VERSION = '1.0.1';
+
 // ── Food data ─────────────────────────────────────────────────────────────────
 // gPerCup: grams per US cup (≈240 ml) for each category
 const FOODS = [
@@ -1446,6 +1448,8 @@ function esc(s) {
 
 // ── Init ──────────────────────────────────────────────────────────────────────
 loadStorage();
+
+$('drawerVersion').textContent = 'v' + VERSION;
 
 if (!('showSaveFilePicker' in window)) {
   $('linkFileBtn').closest('.drawer-section').style.display = 'none';

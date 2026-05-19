@@ -862,6 +862,7 @@ html, body {
   border-bottom: 1px solid var(--border);
 }
 .drawer-app-name { font-size: 17px; font-weight: 700; }
+.drawer-version  { font-size: 11px; color: var(--text-2); margin-top: 2px; }
 .drawer-close {
   background: none;
   border: none;
