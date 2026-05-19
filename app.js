@@ -73,7 +73,7 @@ function loadDayData(date) {
         workoutLog = saved.workout || [];
         weightLog  = saved.weight  || [];
       } else {
-        foodLog = workoutLog = weightLog = [];
+        foodLog = []; workoutLog = []; weightLog = [];
       }
     } catch (_) { foodLog = workoutLog = weightLog = []; }
   } else {
@@ -84,7 +84,7 @@ function loadDayData(date) {
       workoutLog = entry.entries.filter(e => (e._type || e.type) === 'workout');
       weightLog  = entry.entries.filter(e => (e._type || e.type) === 'weight');
     } else {
-      foodLog = workoutLog = weightLog = [];
+      foodLog = []; workoutLog = []; weightLog = [];
     }
   }
 }
